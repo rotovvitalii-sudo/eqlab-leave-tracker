@@ -1,5 +1,6 @@
 import { PageHeader, SectionTitle } from "@/components/headings";
 import { OnboardingTips } from "@/components/onboarding-tips";
+import { EnteredByHr } from "@/components/request-list";
 import { RolePage } from "@/components/role-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
@@ -89,13 +90,14 @@ type RequestRow = {
   employee_comment: string | null;
   decision_comment: string | null;
   document_path: string | null;
+  created_by: string | null;
 };
 
 async function MyRequests({ employeeId, today }: { employeeId: string; today: string }) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("leave_requests")
-    .select("id, type, start_date, end_date, days, status, employee_comment, decision_comment, document_path")
+    .select("id, type, start_date, end_date, days, status, employee_comment, decision_comment, document_path, created_by")
     .eq("employee_id", employeeId)
     .order("start_date", { ascending: false });
   const requests = (data as RequestRow[] | null) ?? [];
@@ -113,7 +115,9 @@ async function MyRequests({ employeeId, today }: { employeeId: string; today: st
             <CardContent>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="font-medium">{TYPE_LABEL[r.type]}</p>
+                  <p className="font-medium">
+                    {TYPE_LABEL[r.type]} {r.created_by && <EnteredByHr />}
+                  </p>
                   <p className="text-sm text-muted-foreground">
                     {formatRange(r.start_date, r.end_date)} · {daysLabel(r.days)}
                   </p>

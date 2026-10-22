@@ -255,6 +255,32 @@ ok(!r.error, `скасована заявка не блокує ті самі д
 r = await as(EMP, `update leave_requests set start_date = start_date + 1 where employee_id = '${id(10)}'`);
 ok(!!r.error, 'редагувати заявку напряму не можна');
 
+// Заявка адміністратором за співробітника (spec §5.8)
+r = await as(ADM, `select submit_request_for('${id(10)}', 'sick', private.today() - 40, private.today() - 39, 'Подзвонив зранку')`);
+ok(!r.error, `адмін вносить лікарняний за співробітника ${err(r)}`);
+r = await as(EMP, `select status, created_by from leave_requests where type = 'sick' and start_date = private.today() - 40`);
+ok(r.rows?.[0]?.status === 'registered' && r.rows[0].created_by === id(3), `співробітник бачить свій лікарняний: Зареєстровано, внесено адміном (${JSON.stringify(r.rows?.[0])})`);
+r = await as(ADM, `select submit_request_for('${id(11)}', 'annual', private.today() + 3, private.today() + 4)`);
+ok(!r.error, `адмін вносить щорічну за співробітника ${err(r)}`);
+r = await as(MGR, `select count(*)::int c from get_approval_queue() where full_name = 'Максим Гончаренко' and start_date = private.today() + 3`);
+ok(r.rows?.[0]?.c === 1, 'внесена адміном щорічна потрапляє в чергу менеджера');
+r = await as(ADM, `select submit_request_for('${id(10)}', 'annual', private.today() + 100, private.today() + 130)`);
+ok(err(r).includes('Недостатньо днів') || err(r).includes('року'), `за співробітника діють ті самі правила балансу (${err(r)})`);
+r = await as(ADM, `select submit_request_for('${id(10)}', 'sick', private.today() - 40, private.today() - 40)`);
+ok(err(r).includes('в співробітника вже є заявка'), `перетин за співробітника — відмова (${err(r)})`);
+r = await as(ADM, `select submit_request_for('${id(3)}', 'unpaid', private.today() + 5, private.today() + 5)`);
+ok(!r.error, `адмін подає за себе ${err(r)}`);
+r = await as(ADM, `select created_by from leave_requests where employee_id = '${id(3)}' and start_date = private.today() + 5`);
+ok(r.rows?.[0] && r.rows[0].created_by === null, 'власна заявка адміна без позначки «Внесено HR»');
+for (const [who, uid] of [['співробітник', EMP], ['менеджер', MGR], ['чужий акаунт', STR]]) {
+  r = await as(uid, `select submit_request_for('${id(12)}', 'sick', private.today() - 2, private.today() - 2)`);
+  ok(err(r).includes('лише адміністратор'), `${who} не вносить заявку за іншого (${err(r)})`);
+}
+r = await as('anon', `select submit_request_for('${id(12)}', 'sick', current_date - 2, current_date - 2)`);
+ok(!!r.error, 'anon не вносить заявку за іншого');
+r = await as(ADM, `select private.create_request('${id(12)}', 'sick', current_date - 2, current_date - 2, null, null)`);
+ok(!!r.error, `внутрішню функцію створення заявки напряму не викликати (${err(r)})`);
+
 // Скидання демо-даних усіма ролями (крок 3.6)
 for (const [who, uid] of [['менеджер', MGR], ['адміністратор', ADM]]) {
   await db.exec(`insert into leave_requests (employee_id, type, start_date, end_date, days, status)

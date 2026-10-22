@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/server";
+import { RequestForForm, type EmployeeOption } from "./request-for-form";
 import { cn } from "@/lib/utils";
 import {
   addDays, formatRange, kyivToday, MONTHS_LOCATIVE, STATUS_LABEL, TYPE_LABEL,
@@ -186,13 +187,20 @@ async function AllRequests({ params }: { params: Search }) {
   if (f.from) query = query.gte("end_date", f.from);
   if (f.to) query = query.lte("start_date", f.to);
 
-  const [{ data: departments }, { data: rows }] = await Promise.all([
+  const [{ data: departments }, { data: rows }, { data: people }] = await Promise.all([
     supabase.from("departments").select("id, name").order("name"),
     query.order("start_date", { ascending: false }).limit(200),
+    supabase.from("employees").select("id, full_name, departments(name)").order("full_name"),
   ]);
+  const employees: EmployeeOption[] = (people ?? []).map((e) => ({
+    id: e.id,
+    full_name: e.full_name,
+    department: (e.departments as unknown as { name: string } | null)?.name ?? "",
+  }));
 
   return (
     <section className="flex flex-col gap-3">
+      <RequestForForm employees={employees} today={kyivToday()} />
       <Card size="sm">
         <CardContent>
           {/* Остання колонка за шириною кнопок, щоб «Скинути» не обрізалось. */}
