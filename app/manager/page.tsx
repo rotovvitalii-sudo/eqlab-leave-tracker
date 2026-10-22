@@ -1,4 +1,5 @@
 import { PageHeader, SectionTitle } from "@/components/headings";
+import { OnboardingTips } from "@/components/onboarding-tips";
 import { RolePage } from "@/components/role-page";
 import { ApprovalQueue } from "@/components/approval-queue";
 import { BalancesList, type BalanceRow } from "@/components/balances-list";
@@ -27,6 +28,7 @@ async function ManagerDashboard({ employee }: { employee: CurrentEmployee }) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader eyebrow="Менеджер" title="Моя команда" subtitle={`${employee.department} · ${team.length} підлеглих`} />
+      <OnboardingTips set="manager" />
       <ApprovalQueue title="На погодження" />
       <section className="flex flex-col gap-3">
         <SectionTitle>Баланси щорічної відпустки</SectionTitle>

@@ -1,4 +1,5 @@
 import { PageHeader, SectionTitle } from "@/components/headings";
+import { OnboardingTips } from "@/components/onboarding-tips";
 import { RolePage } from "@/components/role-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
@@ -29,6 +30,7 @@ async function EmployeeDashboard({ employee }: { employee: CurrentEmployee }) {
         title="Мої відпустки"
         subtitle={`${employee.position} · ${employee.department}`}
       />
+      <OnboardingTips set="employee" />
       <Balance employeeId={employee.id} />
       <RequestForm employeeId={employee.id} today={today} />
       <MyRequests employeeId={employee.id} today={today} />

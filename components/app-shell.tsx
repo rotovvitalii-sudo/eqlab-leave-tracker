@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { ShowTipsButton } from "@/components/onboarding-tips";
 import { ResetDemoButton } from "@/components/reset-demo-button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
@@ -53,7 +54,10 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
       <footer className="border-t bg-background">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-muted-foreground">
           <span>Демо EQLab: дані вигадані, можна сміливо експериментувати.</span>
-          <ResetDemoButton />
+          <div className="flex flex-wrap items-center gap-4">
+            <ShowTipsButton />
+            <ResetDemoButton />
+          </div>
         </div>
       </footer>
     </div>
