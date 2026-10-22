@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, type Role } from "@/lib/session";
 
@@ -10,7 +9,9 @@ const DEMO_EMAILS: Record<Role, string> = {
   admin: "admin@eqlab.test",
 };
 
-export type SignInState = { error: string | null };
+// Перехід після входу й виходу робить браузер повним перезавантаженням (window.location),
+// а не redirect(): інакше Next зберігає приховані сторінки попереднього користувача в DOM.
+export type SignInState = { error: string | null; redirectTo?: string };
 
 // Пароль демо-акаунтів живе лише на сервері (DEMO_PASSWORD), у браузер не потрапляє.
 export async function signInAsDemo(_prev: SignInState, formData: FormData): Promise<SignInState> {
@@ -24,11 +25,10 @@ export async function signInAsDemo(_prev: SignInState, formData: FormData): Prom
   });
   if (error) return { error: "Не вдалося увійти. Спробуйте ще раз за хвилину." };
 
-  redirect(ROLE_HOME[role]);
+  return { error: null, redirectTo: ROLE_HOME[role] };
 }
 
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
 }

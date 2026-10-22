@@ -88,7 +88,8 @@ async function AllRequests({ params }: { params: Search }) {
     <section className="flex flex-col gap-3">
       <Card size="sm">
         <CardContent>
-          <form className="grid grid-cols-2 gap-3 sm:grid-cols-6 sm:items-end">
+          {/* Остання колонка за шириною кнопок, щоб «Скинути» не обрізалось. */}
+          <form className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(5,minmax(0,1fr))_auto] sm:items-end">
             <input type="hidden" name="tab" value="requests" />
             <Field label="Відділ" className="col-span-2 sm:col-span-1">
               <select name="department" defaultValue={f.department} className={selectClass}>

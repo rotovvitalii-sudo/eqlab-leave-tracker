@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { ResetDemoButton } from "@/components/reset-demo-button";
-import { signOut } from "@/app/actions/auth";
+import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentEmployee } from "@/lib/session";
 import { ROLE_LABEL } from "@/lib/format";
@@ -46,9 +45,7 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
               <div className="font-medium">{employee.full_name}</div>
               <div className="text-muted-foreground">{ROLE_LABEL[employee.role]}</div>
             </div>
-            <form action={signOut}>
-              <Button type="submit" variant="outline" size="sm">Вийти</Button>
-            </form>
+            <SignOutButton />
           </div>
         </div>
       </header>

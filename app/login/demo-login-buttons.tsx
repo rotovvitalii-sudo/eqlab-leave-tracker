@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { ArrowRight, ShieldCheck, UserRound, UsersRound, type LucideIcon } from "lucide-react";
 import { signInAsDemo, type SignInState } from "@/app/actions/auth";
 import type { Role } from "@/lib/session";
@@ -33,8 +33,14 @@ const OPTIONS: { role: Role; title: string; person: string; abilities: string; I
 const initialState: SignInState = { error: null };
 
 export function DemoLoginButtons() {
-  const [state, formAction, pending] = useActionState(signInAsDemo, initialState);
+  const [state, formAction, actionPending] = useActionState(signInAsDemo, initialState);
   const [chosen, setChosen] = useState<Role | null>(null);
+  // Після входу — повне перезавантаження (див. app/actions/auth.ts); до нього кнопки лишаються в стані «Входимо…».
+  const pending = actionPending || Boolean(state.redirectTo);
+
+  useEffect(() => {
+    if (state.redirectTo) window.location.replace(state.redirectTo);
+  }, [state.redirectTo]);
 
   return (
     <form action={formAction} className="mt-4 flex flex-col gap-3">
