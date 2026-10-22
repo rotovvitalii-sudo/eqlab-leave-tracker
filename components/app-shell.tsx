@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
 import { ResetDemoButton } from "@/components/reset-demo-button";
 import { signOut } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,7 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
     <div className="flex flex-1 flex-col">
       <header className="border-b bg-background">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <Link href="/" className="font-semibold">EQLab</Link>
+          <Link href="/" aria-label="EQLab — на головну"><Logo className="text-lg" /></Link>
           <nav className="flex gap-3 text-sm">
             {links.map((link) => (
               <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground">

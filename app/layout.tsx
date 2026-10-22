@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({
+// Шрифт як на eql.systems (spec §11).
+const montserrat = Montserrat({
   variable: "--font-sans",
   subsets: ["latin", "cyrillic"],
 });
@@ -19,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="uk" className={`${geist.variable} h-full antialiased`}>
+    <html lang="uk" className={`${montserrat.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-muted/40">{children}</body>
     </html>
   );
