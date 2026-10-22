@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MartialLawNote } from "@/components/martial-law-note";
 import { cn } from "@/lib/utils";
-import { addDays, daysLabel, MONTHS_LOCATIVE, TYPE_LABEL, type LeaveType } from "@/lib/format";
+import { daysLabel, MONTHS_LOCATIVE, TYPE_LABEL, type LeaveType } from "@/lib/format";
 import { previewRequest, submitRequest, type Preview } from "./actions";
 import { uploadSickDocument, validateDocument } from "./upload-document";
 
@@ -27,7 +27,8 @@ export function RequestForm({ employeeId, today }: { employeeId: string; today: 
   const [pending, startTransition] = useTransition();
 
   const isSick = type === "sick";
-  const minDate = isSick ? undefined : addDays(today, 1);
+  // Відпустку можна почати сьогодні (spec §5.1 п. 2); лікарняний — і на минулі дати.
+  const minDate = isSick ? undefined : today;
   const datesReady = Boolean(start && end && end >= start);
 
   useEffect(() => {

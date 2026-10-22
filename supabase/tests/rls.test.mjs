@@ -139,8 +139,11 @@ ok((await one("select count(*)::int c from employees where user_id is not null")
 const err = (x) => x.error ?? '';
 r = await as(EMP, `select * from preview_request('annual', current_date + 14, current_date + 20)`);
 ok(r.rows?.[0]?.days === 7 && r.rows[0].colleagues.includes('Максим Гончаренко'), `передперегляд: 7 днів, колега з відділу у відпустці (${JSON.stringify(r.rows?.[0])})`);
-r = await as(EMP, `select submit_request('annual', current_date, current_date + 1)`);
-ok(err(r).includes('майбутні'), `відпустка з сьогодні — відмова (${err(r)})`);
+// «Сьогодні» за Києвом (private.today), а не current_date сервера, щоб тест не залежав від часового поясу.
+r = await as(EMP, `select submit_request('annual', private.today() - 1, private.today() + 1)`);
+ok(err(r).includes('сьогоднішньої'), `відпустка з учора — відмова (${err(r)})`);
+r = await as(EMP, `select submit_request('unpaid', private.today(), private.today())`);
+ok(!r.error, `відпустка з сьогодні — створено ${err(r)}`);
 r = await as(EMP, `select submit_request('annual', current_date + 15, current_date + 16)`);
 ok(err(r).includes('уже є заявка'), `перетин із власною заявкою — відмова (${err(r)})`);
 r = await as(EMP, `select submit_request('annual', current_date + 3, current_date + 2)`);
