@@ -24,7 +24,8 @@
 - **На фронтенді й у репозиторії — лише publishable (anon) ключ.** Service role / secret ключ ніколи не потрапляє в код, `.env*`-файли в git і змінні `NEXT_PUBLIC_*`. Застосунку він не потрібен.
 - Змінні оточення:
   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — публічні;
-  - `DEMO_PASSWORD` — лише на сервері: Server Action входу демо-кнопками; не з префіксом `NEXT_PUBLIC_`.
+  - `DEMO_PASSWORD` — лише на сервері: Server Action входу демо-кнопками; не з префіксом `NEXT_PUBLIC_`;
+  - `ANTHROPIC_API_KEY` — лише на сервері: ІІ-асистент (spec §5.10), Claude Haiku 5.5 через `@anthropic-ai/sdk`; не з префіксом `NEXT_PUBLIC_`. Без нього асистент вимкнений, решта працює.
 - `.env.local` у `.gitignore`; у репозиторії лише `.env.example` без значень.
 - **RLS увімкнено на кожній таблиці, у кожної — явні політики за ролями** (spec §5.6). Таблиця без політик = помилка.
 - Storage: політики на `storage.objects` для `sick-documents`. Доступ мають власник, його менеджер і адміністратор.

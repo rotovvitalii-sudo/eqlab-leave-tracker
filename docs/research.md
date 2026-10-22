@@ -177,6 +177,26 @@
 
 ---
 
+## 6. ІІ в продуктах обліку відсутностей (жовтень 2026)
+Додано після здачі MVP, щоб обрати ІІ-фічу. Більшість відкритих джерел — маркетинг вендорів, тож це заяви, а не перевірені факти.
+
+| Продукт | Що робить ІІ | Межі |
+|---|---|---|
+| **Vacation Tracker — Vee AI** (бета) | Персональний асистент у дашборді, Slack і Teams. Знає баланс, політики й календар команди, відповідає на питання, допомагає спланувати відпочинок | Заявку не подає: відкриває форму із заповненими полями, надсилає людина. Не погоджує, не бачить чужих балансів, працює в межах прав ролі |
+| **Personio Assistant** | Відповідає на питання про політики, відпустки й документи | Показує лише дані, доступні користувачу |
+| **Workday Self-Service Agent** | Заявка на відпустку й перевірка балансу через чат або Slack | — |
+| **Time Off Manager 365** | Інсайти Copilot: зростання відсутностей, ризик нестачі людей | Аналітика для менеджера, не порада співробітнику |
+| **Timetastic — Burnout Board** | Не ІІ, а правило: хто давно без відпустки й нічого не запланував | — |
+| **PeopleForce, HURMA** | ІІ в рекрутингу й HR-запитах | У відпустках ІІ не знайшли |
+| **Ponte, Get Gone** (споживчі застосунки) | Підбір «мостиків» біля державних свят: найбільше вихідних за найменше днів відпустки | Не знають ні балансу, ні команди |
+
+**Висновки**
+1. Ринкова норма для ІІ у відпустках — **асистент у чаті**, який відповідає на питання про баланс і команду та готує заявку. Надсилає людина; права — як у ролі.
+2. **Персональний підбір дат** з урахуванням балансу, свят і відсутніх колег у трекерах не знайшли. Це є лише в споживчих застосунках без даних компанії. Тут можна вирізнитися.
+3. Для EQLab (рішення замовника): асистент як Vee на Claude Haiku 5.5. Дані він бере лише через ті самі функції бази з правами користувача, дати перевіряє тими самими правилами, що й форма, і нічого не записує сам.
+
+---
+
 ## Джерела
 - Timetastic: [features](https://timetastic.co.uk/features/), [Maximum absent](https://help.timetastic.co.uk/en/articles/13193336-maximum-absent), [Lock dates](https://help.timetastic.co.uk/en/articles/13193337-lock-dates), [Admin functions](https://help.timetastic.co.uk/en/collections/17407950-admin-functions), [ціни, Capterra](https://www.capterra.co.uk/software/146655/timetastic)
 - Vacation Tracker: [features](https://vacationtracker.io/features/), [Blackout period](https://vacationtracker.io/automations/blackout-period/), [helpdesk: blackout](https://vacationtracker.io/helpdesk/how-to-set-a-blackout-period-block-time)
@@ -188,3 +208,4 @@
 - Factorial: [Absences & approvals](https://help.factorialhr.com/absences-approvals), [Time off settings](https://help.factorialhr.com/about-time-off-settings)
 - PeopleForce: [leave tracking](https://peopleforce.io/en/leave-tracking)
 - HURMA: [головна та ціни](https://hurma.work/), [відпустки й відсутності](https://hurma.work/capabilities/holidays-and-absences-of-employees/), [тарифи](https://hurma.work/tariffs/)
+- ІІ (розділ 6): [Vacation Tracker — Vee AI](https://vacationtracker.io/platform/vee-ai/), [Vee: що бачить](https://vacationtracker.io/knowledge-base/guide-what-is-vee-and-what-can-it-see/), [Vee: як користуватися](https://vacationtracker.io/knowledge-base/how-do-i-use-vee/), [Personio review](https://thrivea.com/blog/personio-review/), [Workday Absence](https://www.workday.com/en-us/products/workforce-management/absence.html), [Time Off Manager 365 / AI time off](https://www.apps365.com/blog/time-off-request-software/), [Timetastic Burnout Board](https://help.timetastic.co.uk/hc/en-us/articles/360015746318-The-Burnout-Board), [HURMA AI](https://dev.ua/en/news/stari-problemy-novi-rishennia-iak-hurma-ai-formuie-kerovanyi-naim-ta-efektyvne-upravlinnia-talantamy-1771252114), [Ponte](https://mwm.ai/ko/apps/ponte/6762510203), [Get Gone](https://apps.apple.com/us/app/-/id6757397729)
