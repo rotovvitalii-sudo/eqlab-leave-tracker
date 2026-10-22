@@ -1,10 +1,11 @@
+import { PageHeader, SectionTitle } from "@/components/headings";
 import { RolePage } from "@/components/role-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/status-badge";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentEmployee } from "@/lib/session";
 import {
-  addDays, daysLabel, formatRange, kyivToday, TYPE_LABEL,
+  addDays, daysLabel, formatRange, kyivToday, ROLE_LABEL, TYPE_LABEL,
   type LeaveStatus, type LeaveType,
 } from "@/lib/format";
 import { RequestForm } from "./request-form";
@@ -23,10 +24,11 @@ async function EmployeeDashboard({ employee }: { employee: CurrentEmployee }) {
   const today = kyivToday();
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold">Мої відпустки</h1>
-        <p className="text-sm text-muted-foreground">{employee.position} · {employee.department}</p>
-      </div>
+      <PageHeader
+        eyebrow={ROLE_LABEL[employee.role]}
+        title="Мої відпустки"
+        subtitle={`${employee.position} · ${employee.department}`}
+      />
       <Balance employeeId={employee.id} />
       <RequestForm employeeId={employee.id} today={today} />
       <MyRequests employeeId={employee.id} today={today} />
@@ -56,12 +58,12 @@ async function Balance({ employeeId }: { employeeId: string }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-semibold">{Math.max(own.available, 0)}</span>
+          <span className="text-5xl font-bold tracking-tight text-primary">{Math.max(own.available, 0)}</span>
           <span className="text-sm text-muted-foreground">доступно зараз</span>
         </div>
         <dl className="grid grid-cols-3 gap-2 text-sm">
           {items.map((item) => (
-            <div key={item.label} className="rounded-lg bg-muted px-3 py-2">
+            <div key={item.label} className="rounded-tile bg-muted px-3 py-2">
               <dt className="text-xs text-muted-foreground">{item.label}</dt>
               <dd className="font-medium">{daysLabel(item.value)}</dd>
             </div>
@@ -98,7 +100,7 @@ async function MyRequests({ employeeId, today }: { employeeId: string; today: st
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Мої заявки</h2>
+      <SectionTitle>Мої заявки</SectionTitle>
       {requests.length === 0 && <p className="text-sm text-muted-foreground">Заявок ще немає.</p>}
       {requests.map((r) => {
         const notStarted = r.start_date > today;
@@ -157,7 +159,7 @@ async function ColleagueAbsences({ employeeId, today }: { employeeId: string; to
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-lg font-semibold">Відсутні колеги</h2>
+        <SectionTitle>Відсутні колеги</SectionTitle>
         <p className="text-sm text-muted-foreground">Сьогодні й наступні 30 днів, уся компанія</p>
       </div>
       {absences.length === 0 && <p className="text-sm text-muted-foreground">Ніхто не відсутній.</p>}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PageHeader, SectionTitle } from "@/components/headings";
 import { RolePage } from "@/components/role-page";
 import { ApprovalQueue } from "@/components/approval-queue";
 import { BalancesList, type BalanceRow } from "@/components/balances-list";
@@ -33,16 +34,17 @@ async function AdminDashboard({ searchParams }: { searchParams: Promise<Search> 
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Адміністрування</h1>
+      <PageHeader eyebrow="Адміністратор" title="Адміністрування" subtitle="Уся компанія: заявки, баланси, відсутності, експорт" />
       <ApprovalQueue title="Заявки директорки на погодження" hideWhenEmpty />
-      <nav className="flex gap-1 overflow-x-auto rounded-lg bg-muted p-1 text-sm">
+      {/* На телефоні вкладки — сітка 2×2, щоб усі було видно без прокрутки. */}
+      <nav className="grid grid-cols-2 gap-1 rounded-tile bg-muted p-1 text-sm sm:flex">
         {TABS.map((t) => (
           <Link
             key={t.id}
             href={`/admin?tab=${t.id}`}
             className={cn(
-              "shrink-0 rounded-md px-3 py-1.5",
-              tab === t.id ? "bg-background font-medium shadow-sm" : "text-muted-foreground",
+              "rounded-lg px-3 py-1.5 text-center",
+              tab === t.id ? "bg-background font-semibold text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
             )}
           >
             {t.label}
@@ -157,8 +159,8 @@ async function WhoIsAbsent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AbsenceSection title={`Сьогодні (${todayRows.length})`} rows={todayRows} />
-      <AbsenceSection title={`Пізніше цього тижня (${weekRows.length})`} rows={weekRows} />
+      <AbsenceSection title="Сьогодні" rows={todayRows} />
+      <AbsenceSection title="Пізніше цього тижня" rows={weekRows} />
     </div>
   );
 }
@@ -166,7 +168,7 @@ async function WhoIsAbsent() {
 function AbsenceSection({ title, rows }: { title: string; rows: AbsenceRow[] }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
+      <SectionTitle count={rows.length}>{title}</SectionTitle>
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">Ніхто не відсутній.</p>
       ) : (

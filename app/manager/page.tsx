@@ -1,3 +1,4 @@
+import { PageHeader, SectionTitle } from "@/components/headings";
 import { RolePage } from "@/components/role-page";
 import { ApprovalQueue } from "@/components/approval-queue";
 import { BalancesList, type BalanceRow } from "@/components/balances-list";
@@ -25,17 +26,14 @@ async function ManagerDashboard({ employee }: { employee: CurrentEmployee }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold">Моя команда</h1>
-        <p className="text-sm text-muted-foreground">{employee.department} · {team.length} підлеглих</p>
-      </div>
+      <PageHeader eyebrow="Менеджер" title="Моя команда" subtitle={`${employee.department} · ${team.length} підлеглих`} />
       <ApprovalQueue title="На погодження" />
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Баланси щорічної відпустки</h2>
+        <SectionTitle>Баланси щорічної відпустки</SectionTitle>
         <BalancesList rows={team} />
       </section>
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Заявки та лікарняні команди</h2>
+        <SectionTitle>Заявки та лікарняні команди</SectionTitle>
         <RequestList rows={(requests as unknown as RequestListRow[] | null) ?? []} empty="Заявок ще немає." />
       </section>
     </div>

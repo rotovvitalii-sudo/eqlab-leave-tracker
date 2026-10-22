@@ -52,7 +52,7 @@ export function DemoLoginButtons() {
             <span aria-hidden className="absolute top-4 right-5 text-3xl font-bold text-foreground/10">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="flex size-11 items-center justify-center rounded-[0.75rem] bg-muted text-primary">
+            <span className="flex size-11 items-center justify-center rounded-tile bg-muted text-primary">
               <Icon className="size-5" />
             </span>
             <span>

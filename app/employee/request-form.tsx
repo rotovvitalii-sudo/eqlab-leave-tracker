@@ -126,7 +126,7 @@ export function RequestForm({ employeeId, today }: { employeeId: string; today: 
           {isSick && <p className="-mt-2 text-xs text-muted-foreground">Лікарняний можна оформити й на минулі дати.</p>}
 
           {datesReady && preview && (
-            <div className="rounded-lg bg-muted px-3 py-2 text-sm">
+            <div className="rounded-tile bg-muted px-3 py-2 text-sm">
               <p>
                 {isSick ? "Тривалість" : "Буде враховано"}: <b>{daysLabel(preview.days)}</b>
                 {preview.available !== null && (
@@ -138,7 +138,7 @@ export function RequestForm({ employeeId, today }: { employeeId: string; today: 
           )}
 
           {datesReady && preview && preview.colleagues.length > 0 && (
-            <div role="status" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <div role="status" className="rounded-tile border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               У ці дати з вашого відділу відсутні: {preview.colleagues.join(", ")}. Заявку все одно можна надіслати.
             </div>
           )}

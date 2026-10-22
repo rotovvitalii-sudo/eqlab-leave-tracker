@@ -44,6 +44,8 @@
   --radius-lg: var(--radius);
   /* Картки як на eql.systems: 16 px; кнопки й поля — базовий радіус 6 px. */
   --radius-xl: 1rem;
+  /* Плитки й підказки всередині карток: 12 px (rounded-tile). */
+  --radius-tile: 0.75rem;
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);

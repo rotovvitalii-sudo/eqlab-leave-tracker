@@ -5,8 +5,7 @@ import { ResetDemoButton } from "@/components/reset-demo-button";
 import { signOut } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentEmployee } from "@/lib/session";
-
-const ROLE_LABEL = { employee: "Співробітник", manager: "Менеджер", admin: "Адміністратор" };
+import { ROLE_LABEL } from "@/lib/format";
 
 // Шапка з навігацією за роллю: менеджер і адмін теж мають «Мої відпустки».
 export async function AppShell({ employee, children }: { employee: CurrentEmployee; children: React.ReactNode }) {
@@ -27,11 +26,12 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-b bg-background">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+        {/* На телефоні: логотип і користувач у першому рядку, навігація — у другому. */}
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Link href="/" aria-label="EQLab — на головну"><Logo className="text-lg" /></Link>
-          <nav className="flex gap-3 text-sm">
+          <nav className="order-last flex w-full gap-4 text-sm font-medium sm:order-none sm:w-auto">
             {links.map((link) => (
-              <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground">
+              <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-primary">
                 {link.label}
                 {link.count > 0 && (
                   <span className="ml-1 rounded-full bg-amber-500 px-1.5 py-0.5 text-[11px] font-semibold text-white">

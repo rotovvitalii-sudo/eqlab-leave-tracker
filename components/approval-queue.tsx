@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DecisionForm } from "@/components/decision-form";
+import { SectionTitle } from "@/components/headings";
 import { MartialLawNote } from "@/components/martial-law-note";
 import { createClient } from "@/lib/supabase/server";
 import { daysLabel, formatRange, TYPE_LABEL, type LeaveType } from "@/lib/format";
@@ -26,10 +27,10 @@ export async function ApprovalQueue({ title, hideWhenEmpty = false }: { title: s
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">
-        {title} <span className="text-muted-foreground">({queue.length})</span>
-      </h2>
+      <SectionTitle count={queue.length}>{title}</SectionTitle>
       {queue.length === 0 && <p className="text-sm text-muted-foreground">Нових заявок немає.</p>}
+      {/* Примітка одна на чергу, а не в кожній картці. */}
+      {queue.some((r) => r.type === "annual") && <MartialLawNote />}
       {queue.map((r) => (
         <Card key={r.id} size="sm">
           <CardContent>
@@ -45,11 +46,10 @@ export async function ApprovalQueue({ title, hideWhenEmpty = false }: { title: s
             </p>
             {r.employee_comment && <p className="mt-1 text-sm">Коментар: {r.employee_comment}</p>}
             {r.colleagues.length > 0 && (
-              <p role="status" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              <p role="status" className="mt-2 rounded-tile border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                 У ці дати з відділу вже відсутні: {r.colleagues.join(", ")}
               </p>
             )}
-            {r.type === "annual" && <div className="mt-2"><MartialLawNote /></div>}
             <DecisionForm requestId={r.id} />
           </CardContent>
         </Card>
