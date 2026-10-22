@@ -29,6 +29,9 @@ const TIPS: Record<TipsSet, string[]> = {
   ],
 };
 
+const ASSISTANT_TIP =
+  "«Асистент» праворуч унизу: спитайте про баланс чи колег або попросіть підібрати дати — він перевірить їх і підготує чернетку заявки.";
+
 const SHOW_EVENT = "eqlab:show-tips";
 const storageKey = (set: TipsSet) => `eqlab-tips-${set}-v1`;
 
@@ -45,7 +48,7 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("storage", onChange);
 };
 
-export function OnboardingTips({ set }: { set: TipsSet }) {
+export function OnboardingTips({ set, assistant = false }: { set: TipsSet; assistant?: boolean }) {
   // На сервері вважаємо «вже бачив»: підказки з'являються лише в браузері, без розбіжності розмітки.
   const seen = useSyncExternalStore(subscribe, () => readSeen(set), () => true);
   // Рішення в цій вкладці: «Зрозуміло» ховає навіть без доступу до сховища, «Підказки» в підвалі показують знову.
@@ -80,7 +83,7 @@ export function OnboardingTips({ set }: { set: TipsSet }) {
           </div>
         </div>
         <ol className="flex flex-col gap-2 text-sm">
-          {TIPS[set].map((tip, index) => (
+          {(assistant ? [...TIPS[set], ASSISTANT_TIP] : TIPS[set]).map((tip, index) => (
             <li key={index} className="flex gap-3">
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-primary">
                 {index + 1}

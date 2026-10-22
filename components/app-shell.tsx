@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssistantPanel } from "@/components/assistant-panel";
 import { Logo } from "@/components/logo";
 import { ShowTipsButton } from "@/components/onboarding-tips";
 import { ResetDemoButton } from "@/components/reset-demo-button";
@@ -6,6 +7,8 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 import type { CurrentEmployee } from "@/lib/session";
 import { ROLE_LABEL } from "@/lib/format";
+import { assistantEnabled } from "@/lib/ai/assistant";
+import { cn } from "@/lib/utils";
 
 // Шапка з навігацією за роллю: менеджер і адмін теж мають «Мої відпустки».
 export async function AppShell({ employee, children }: { employee: CurrentEmployee; children: React.ReactNode }) {
@@ -17,6 +20,7 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
     pending = data?.length ?? 0;
   }
 
+  const ai = assistantEnabled();
   const links = [
     { href: "/employee", label: "Мої відпустки", count: 0 },
     ...(employee.role === "manager" ? [{ href: "/manager", label: "Моя команда", count: pending }] : []),
@@ -52,7 +56,8 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
       </header>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
       <footer className="border-t bg-background">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-muted-foreground">
+        {/* Місце під плаваючу кнопку «Асистент», щоб вона не закривала «Скинути демо-дані» на телефоні. */}
+        <div className={cn("mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3 text-xs text-muted-foreground", ai && "pb-20 sm:pb-3")}>
           <span>Демо EQLab: дані вигадані, можна сміливо експериментувати.</span>
           <div className="flex flex-wrap items-center gap-4">
             <ShowTipsButton />
@@ -60,6 +65,8 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
           </div>
         </div>
       </footer>
+      {/* ІІ-асистент (spec §5.10): лише коли на сервері є ключ Anthropic. */}
+      {ai && <AssistantPanel />}
     </div>
   );
 }

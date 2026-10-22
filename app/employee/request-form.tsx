@@ -14,12 +14,15 @@ import { uploadSickDocument, validateDocument } from "./upload-document";
 
 const TYPES: LeaveType[] = ["annual", "unpaid", "sick"];
 
-export function RequestForm({ employeeId, today }: { employeeId: string; today: string }) {
-  const [open, setOpen] = useState(false);
-  const [type, setType] = useState<LeaveType>("annual");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [comment, setComment] = useState("");
+// Чернетка від ІІ-асистента: форма відкривається з цими значеннями (spec §5.10).
+export type DraftInitial = { type: LeaveType; start: string; end: string; comment: string };
+
+export function RequestForm({ employeeId, today, initial }: { employeeId: string; today: string; initial?: DraftInitial }) {
+  const [open, setOpen] = useState(Boolean(initial));
+  const [type, setType] = useState<LeaveType>(initial?.type ?? "annual");
+  const [start, setStart] = useState(initial?.start ?? "");
+  const [end, setEnd] = useState(initial?.end ?? "");
+  const [comment, setComment] = useState(initial?.comment ?? "");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);

@@ -1,5 +1,6 @@
 import { PageHeader, SectionTitle } from "@/components/headings";
 import { OnboardingTips } from "@/components/onboarding-tips";
+import { assistantEnabled } from "@/lib/ai/assistant";
 import { EnteredByHr } from "@/components/request-list";
 import { RolePage } from "@/components/role-page";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,20 +11,34 @@ import {
   addDays, daysLabel, formatRange, kyivToday, ROLE_LABEL, TYPE_LABEL,
   type LeaveStatus, type LeaveType,
 } from "@/lib/format";
-import { RequestForm } from "./request-form";
+import { RequestForm, type DraftInitial } from "./request-form";
 import { RequestActions } from "./request-actions";
 
-export default function EmployeePage() {
+type Search = Record<string, string | string[] | undefined>;
+
+export default function EmployeePage({ searchParams }: PageProps<"/employee">) {
   return (
     <RolePage
       allowed={["employee", "manager", "admin"]}
-      render={(employee) => <EmployeeDashboard employee={employee} />}
+      render={(employee) => <EmployeeDashboard employee={employee} searchParams={searchParams} />}
     />
   );
 }
 
-async function EmployeeDashboard({ employee }: { employee: CurrentEmployee }) {
+// Чернетка від асистента приходить параметрами адреси (spec §5.10): форма відкривається заповненою, надсилає людина.
+function draftFromSearch(params: Search): DraftInitial | undefined {
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const type = one(params.type) as LeaveType;
+  const start = one(params.start);
+  const end = one(params.end);
+  const iso = /^\d{4}-\d{2}-\d{2}$/;
+  if (!["annual", "unpaid", "sick"].includes(type) || !iso.test(start) || !iso.test(end)) return undefined;
+  return { type, start, end, comment: one(params.comment).slice(0, 500) };
+}
+
+async function EmployeeDashboard({ employee, searchParams }: { employee: CurrentEmployee; searchParams: Promise<Search> }) {
   const today = kyivToday();
+  const initial = draftFromSearch(await searchParams);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -31,9 +46,14 @@ async function EmployeeDashboard({ employee }: { employee: CurrentEmployee }) {
         title="Мої відпустки"
         subtitle={`${employee.position} · ${employee.department}`}
       />
-      <OnboardingTips set="employee" />
+      <OnboardingTips set="employee" assistant={assistantEnabled()} />
       <Balance employeeId={employee.id} />
-      <RequestForm employeeId={employee.id} today={today} />
+      <RequestForm
+        key={initial ? `${initial.type}-${initial.start}-${initial.end}` : "empty"}
+        employeeId={employee.id}
+        today={today}
+        initial={initial}
+      />
       <MyRequests employeeId={employee.id} today={today} />
       <ColleagueAbsences employeeId={employee.id} today={today} />
     </div>
