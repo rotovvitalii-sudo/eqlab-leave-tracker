@@ -55,8 +55,9 @@ ok((await one('select count(*)::int c from employees'))[0].c === 50, '50 спі�
 ok((await one('select count(*)::int c from departments'))[0].c === 5, '5 відділів');
 ok((await one('select count(*)::int c from leave_requests'))[0].c === 15, '15 заявок');
 ok((await one('select count(distinct status)::int c from leave_requests'))[0].c === 5, 'усі 5 статусів');
-ok((await one("select count(*)::int c from employees where manager_id is null"))[0].c === 1, 'без менеджера лише директорка');
-ok((await one("select count(*)::int c from employees where user_id is not null"))[0].c === 3, '3 демо-акаунти прив\'язано');
+ok((await one("select count(*)::int c from employees where role = 'admin'"))[0].c === 1, 'один адміністратор, решта — співробітники (spec v1.5)');
+ok((await one("select count(*)::int c from information_schema.columns where table_name = 'employees' and column_name = 'manager_id'"))[0].c === 0, 'manager_id прибрано');
+ok((await one("select count(*)::int c from employees where user_id is not null"))[0].c === 2, '2 демо-акаунти прив\'язано');
 
 // Підрахунок днів і накопичення
 ok((await one("select private.count_days('annual','2026-08-23','2026-08-27') c"))[0].c === 4, 'щорічна 23–27.08: 5 днів мінус 24 серпня = 4');
@@ -68,10 +69,8 @@ ok((await one("select private.accrued_days('2026-11-01','2026-10-22') c"))[0].c 
 // RLS: заявки
 let r = await as(EMP, 'select employee_id from leave_requests');
 ok(r.rows && r.rows.length === 4 && r.rows.every((x) => x.employee_id === id(10)), `співробітник бачить лише свої заявки (${r.rows?.length})`);
-r = await as(MGR, 'select employee_id from leave_requests');
-ok(r.rows && r.rows.length === 9, `менеджер: свої + підлеглих (${r.rows?.length})`);
-r = await as(MGR, `select count(*)::int c from leave_requests where employee_id = '${id(28)}'`);
-ok(r.rows[0].c === 0, 'менеджер не бачить заявки іншого відділу');
+r = await as(MGR, 'select count(*)::int c from leave_requests');
+ok(r.rows[0].c === 0, `колишній акаунт менеджера більше не прив'язаний і бачить 0 (${r.rows?.[0]?.c})`);
 r = await as(ADM, 'select count(*)::int c from leave_requests');
 ok(r.rows[0].c === 15, 'адміністратор бачить усі заявки');
 r = await as(STR, 'select count(*)::int c from leave_requests');
@@ -96,7 +95,7 @@ r = await as(EMP, 'select * from get_balances()');
 ok(r.rows?.length === 1, 'співробітник бачить лише свій баланс');
 console.log('      баланс демо-співробітника:', JSON.stringify(r.rows?.[0]));
 r = await as(MGR, 'select count(*)::int c from get_balances()');
-ok(r.rows[0].c === 18, `менеджер: свій + 17 підлеглих (${r.rows[0].c})`);
+ok(r.rows[0].c === 0, `колишній акаунт менеджера не бачить балансів (${r.rows[0].c})`);
 r = await as(ADM, 'select count(*)::int c from get_balances()');
 ok(r.rows[0].c === 50, 'адміністратор: усі 50');
 r = await as('anon', 'select * from get_balances()');
@@ -114,8 +113,8 @@ await db.exec(`insert into storage.objects (bucket_id, name) values
   ('sick-documents', '${id(10)}/req1/eln.pdf'), ('sick-documents', '${id(38)}/req2/eln.pdf')`);
 r = await as(EMP, 'select name from storage.objects');
 ok(r.rows?.length === 1 && r.rows[0].name.startsWith(id(10)), 'співробітник бачить лише свій файл');
-r = await as(MGR, 'select name from storage.objects');
-ok(r.rows?.length === 1 && r.rows[0].name.startsWith(id(10)), 'менеджер бачить файл підлеглого, але не іншого відділу');
+r = await as(MGR, 'select count(*)::int c from storage.objects');
+ok(r.rows[0].c === 0, 'колишній акаунт менеджера не бачить файлів');
 r = await as(ADM, 'select count(*)::int c from storage.objects');
 ok(r.rows[0].c === 2, 'адміністратор бачить усі файли');
 r = await as(EMP, `insert into storage.objects (bucket_id, name) values ('sick-documents', '${id(11)}/x/a.pdf')`);
@@ -133,7 +132,7 @@ await db.exec('delete from leave_requests where true');
 r = await as(EMP, 'select reset_demo()');
 ok(!r.error, `демо-співробітник скидає дані ${r.error ?? ''}`);
 ok((await one('select count(*)::int c from leave_requests'))[0].c === 15, 'після скидання знову 15 заявок');
-ok((await one("select count(*)::int c from employees where user_id is not null"))[0].c === 3, 'після скидання демо-акаунти прив\'язані');
+ok((await one("select count(*)::int c from employees where user_id is not null"))[0].c === 2, 'після скидання обидва демо-акаунти прив\'язані');
 
 // Дії співробітника (крок 3.3)
 const err = (x) => x.error ?? '';
@@ -181,45 +180,41 @@ ok(!!r.error, 'чужу заявку скасувати не можна');
 r = await as('anon', `select submit_request('annual', current_date + 5, current_date + 6)`);
 ok(!!r.error, 'anon не подає заявки');
 
-// Погодження й експорт (крок 3.4)
+// Погодження й експорт (spec v1.5: погоджує адміністратор, зокрема власні заявки)
 await db.exec("select set_config('request.jwt.claim.sub', '', false); select reset_demo();");
-r = await as(MGR, 'select * from get_approval_queue()');
+r = await as(ADM, 'select * from get_approval_queue()');
 const mq = r.rows ?? [];
-ok(mq.length === 3 && mq.every((x) => x.department === 'Розробка'), `черга менеджера: 3 заявки підлеглих (${mq.length})`);
-ok(!mq.some((x) => x.employee_id === id(9)), 'власної заявки менеджера в його черзі немає');
+ok(mq.length === 4, `черга адміністратора: усі 4 заявки на розгляді (${mq.length})`);
+ok(mq.some((x) => x.employee_id === id(9)), 'у черзі й заявка керівника розробки — тепер звичайного співробітника');
 const andriy = mq.find((x) => x.employee_id === id(10));
 ok(andriy?.colleagues.includes('Максим Гончаренко') && andriy.available_after === 6, `підказки: колега з відділу і залишок після погодження (${JSON.stringify(andriy && { c: andriy.colleagues, a: andriy.available_after })})`);
 r = await as(EMP, 'select count(*)::int c from get_approval_queue()');
 ok(r.rows[0].c === 0, 'черга співробітника порожня');
 r = await as(EMP, `select decide_request('${andriy.id}', true)`);
 ok(err(r).includes('не можете'), 'співробітник не погоджує');
-r = await as(ADM, `select decide_request('${andriy.id}', true)`);
-ok(err(r).includes('не можете'), 'адміністратор не втручається в погодження менеджера');
+r = await as(MGR, `select decide_request('${andriy.id}', true)`);
+ok(err(r).includes('не можете'), 'колишній акаунт менеджера не погоджує');
 const unpaid = mq.find((x) => x.type === 'unpaid');
-r = await as(MGR, `select decide_request('${unpaid.id}', false, '   ')`);
+r = await as(ADM, `select decide_request('${unpaid.id}', false, '   ')`);
 ok(err(r).includes('причину'), 'відмова без коментаря — помилка');
-r = await as(MGR, `select decide_request('${unpaid.id}', false, 'Реліз цього тижня')`);
+r = await as(ADM, `select decide_request('${unpaid.id}', false, 'Реліз цього тижня')`);
 ok(!r.error, 'відмова з коментарем');
 r = await as(EMP, `select count(*)::int c from leave_requests where id = '${unpaid.id}'`);
 ok(r.rows[0].c === 0, 'чужу відхилену заявку співробітник не бачить');
-r = await as(MGR, `select decide_request('${andriy.id}', true)`);
-ok(!r.error, 'погодження менеджером');
+r = await as(ADM, `select decide_request('${andriy.id}', true)`);
+ok(!r.error, 'погодження адміністратором');
 r = await as(EMP, `select status, decided_by from leave_requests where id = '${andriy.id}'`);
-ok(r.rows[0].status === 'approved' && r.rows[0].decided_by === id(9), 'співробітник бачить Погоджено й хто погодив');
-r = await as(MGR, `select decide_request('${andriy.id}', false, 'передумав')`);
+ok(r.rows[0].status === 'approved' && r.rows[0].decided_by === id(3), 'співробітник бачить Погоджено й хто погодив');
+r = await as(ADM, `select decide_request('${andriy.id}', false, 'передумав')`);
 ok(err(r).includes('вже розглянуто'), 'повторне рішення — відмова');
-r = await as(MGR, `select id from leave_requests where employee_id = '${id(9)}' and status = 'pending'`);
-const own = r.rows[0].id;
-r = await as(MGR, `select decide_request('${own}', true)`);
-ok(err(r).includes('не можете'), 'менеджер не погоджує власну заявку');
 await db.exec(`insert into leave_requests (employee_id, type, start_date, end_date, days, status)
-  values ('${id(1)}', 'annual', current_date + 70, current_date + 71, 2, 'pending')`);
-r = await as(ADM, 'select * from get_approval_queue()');
-ok(r.rows?.length === 1 && r.rows[0].employee_id === id(1), 'у черзі адміна — заявка директорки');
+  values ('${id(3)}', 'annual', current_date + 70, current_date + 71, 2, 'pending')`);
+r = await as(ADM, `select id from get_approval_queue() where employee_id = '${id(3)}'`);
+ok(r.rows?.length === 1, 'власна заявка адміністратора — у його черзі');
 r = await as(ADM, `select decide_request('${r.rows[0].id}', true)`);
-ok(!r.error, 'адміністратор погоджує заявку директорки');
-r = await as(MGR, `select * from export_month(current_date)`);
-ok(err(r).includes('лише адміністратору'), 'експорт менеджеру недоступний');
+ok(!r.error, `адміністратор погоджує власну заявку ${err(r)}`);
+r = await as(EMP, `select * from export_month(current_date)`);
+ok(err(r).includes('лише адміністратору'), 'експорт співробітнику недоступний');
 r = await as(ADM, `select * from export_month(current_date)`);
 const rows = r.rows ?? [];
 ok(rows.length > 0 && rows.every((x) => x.days_in_month > 0), `експорт за поточний місяць: ${rows.length} рядків`);
@@ -262,8 +257,8 @@ r = await as(EMP, `select status, created_by from leave_requests where type = 's
 ok(r.rows?.[0]?.status === 'registered' && r.rows[0].created_by === id(3), `співробітник бачить свій лікарняний: Зареєстровано, внесено адміном (${JSON.stringify(r.rows?.[0])})`);
 r = await as(ADM, `select submit_request_for('${id(11)}', 'annual', private.today() + 3, private.today() + 4)`);
 ok(!r.error, `адмін вносить щорічну за співробітника ${err(r)}`);
-r = await as(MGR, `select count(*)::int c from get_approval_queue() where full_name = 'Максим Гончаренко' and start_date = private.today() + 3`);
-ok(r.rows?.[0]?.c === 1, 'внесена адміном щорічна потрапляє в чергу менеджера');
+r = await as(ADM, `select count(*)::int c from get_approval_queue() where full_name = 'Максим Гончаренко' and start_date = private.today() + 3`);
+ok(r.rows?.[0]?.c === 1, 'внесена адміном щорічна потрапляє в чергу погодження');
 r = await as(ADM, `select submit_request_for('${id(10)}', 'annual', private.today() + 100, private.today() + 130)`);
 ok(err(r).includes('Недостатньо днів') || err(r).includes('року'), `за співробітника діють ті самі правила балансу (${err(r)})`);
 r = await as(ADM, `select submit_request_for('${id(10)}', 'sick', private.today() - 40, private.today() - 40)`);
@@ -272,7 +267,7 @@ r = await as(ADM, `select submit_request_for('${id(3)}', 'unpaid', private.today
 ok(!r.error, `адмін подає за себе ${err(r)}`);
 r = await as(ADM, `select created_by from leave_requests where employee_id = '${id(3)}' and start_date = private.today() + 5`);
 ok(r.rows?.[0] && r.rows[0].created_by === null, 'власна заявка адміна без позначки «Внесено HR»');
-for (const [who, uid] of [['співробітник', EMP], ['менеджер', MGR], ['чужий акаунт', STR]]) {
+for (const [who, uid] of [['співробітник', EMP], ['колишній акаунт менеджера', MGR], ['чужий акаунт', STR]]) {
   r = await as(uid, `select submit_request_for('${id(12)}', 'sick', private.today() - 2, private.today() - 2)`);
   ok(err(r).includes('лише адміністратор'), `${who} не вносить заявку за іншого (${err(r)})`);
 }
@@ -282,7 +277,7 @@ r = await as(ADM, `select private.create_request('${id(12)}', 'sick', current_da
 ok(!!r.error, `внутрішню функцію створення заявки напряму не викликати (${err(r)})`);
 
 // Скидання демо-даних усіма ролями (крок 3.6)
-for (const [who, uid] of [['менеджер', MGR], ['адміністратор', ADM]]) {
+for (const [who, uid] of [['співробітник', EMP], ['адміністратор', ADM]]) {
   await db.exec(`insert into leave_requests (employee_id, type, start_date, end_date, days, status)
     values ('${id(20)}', 'unpaid', current_date + 90, current_date + 90, 1, 'pending')`);
   r = await as(uid, 'select reset_demo()');
