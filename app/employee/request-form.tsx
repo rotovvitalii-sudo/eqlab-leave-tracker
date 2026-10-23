@@ -54,16 +54,30 @@ export function RequestForm({ employeeId, today, initial }: { employeeId: string
     setError(null);
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  function changeStart(value: string) {
+    setStart(value);
+    if (value && (!end || value > end)) setEnd(value);
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setSuccess(null);
+    // Дати беремо з самих полів: деякі браузери (Safari) не завжди надсилають подію зміни,
+    // і тоді на екрані дата є, а в стані форми — ні.
+    const field = (name: string) => (event.currentTarget.elements.namedItem(name) as HTMLInputElement | null)?.value ?? "";
+    const startValue = field("start") || start;
+    const endValue = field("end") || end;
+    setStart(startValue);
+    setEnd(endValue);
+    if (!startValue || !endValue) return setError("Вкажіть дати початку і кінця.");
+    if (endValue < startValue) return setError("Дата кінця не може бути раніше за дату початку.");
     if (file) {
       const invalid = validateDocument(file);
       if (invalid) return setError(invalid);
     }
     startTransition(async () => {
-      const result = await submitRequest({ type, start, end, comment });
+      const result = await submitRequest({ type, start: startValue, end: endValue, comment });
       if (!result.ok) return setError(result.error);
 
       let message = isSick ? "Лікарняний зареєстровано." : "Заявку надіслано адміністратору на погодження.";
@@ -96,7 +110,8 @@ export function RequestForm({ employeeId, today, initial }: { employeeId: string
         <CardTitle>Нова заявка</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* noValidate: замість англомовних підказок браузера — наші повідомлення українською. */}
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Тип відсутності">
             {TYPES.map((t) => (
               <button
@@ -118,13 +133,13 @@ export function RequestForm({ employeeId, today, initial }: { employeeId: string
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="start">З</Label>
-              <Input id="start" type="date" required min={minDate} value={start}
-                onChange={(e) => { setStart(e.target.value); if (!end || e.target.value > end) setEnd(e.target.value); }} />
+              <Input id="start" name="start" type="date" required min={minDate} value={start}
+                onChange={(e) => changeStart(e.target.value)} onBlur={(e) => changeStart(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="end">По</Label>
-              <Input id="end" type="date" required min={start || minDate} value={end}
-                onChange={(e) => setEnd(e.target.value)} />
+              <Input id="end" name="end" type="date" required min={start || minDate} value={end}
+                onChange={(e) => setEnd(e.target.value)} onBlur={(e) => setEnd(e.target.value)} />
             </div>
           </div>
           {isSick && <p className="-mt-2 text-xs text-muted-foreground">Лікарняний можна оформити й на минулі дати.</p>}
@@ -166,7 +181,7 @@ export function RequestForm({ employeeId, today, initial }: { employeeId: string
             <Button type="button" variant="outline" size="lg" onClick={() => { reset(); setOpen(false); }}>
               Скасувати
             </Button>
-            <Button type="submit" size="lg" disabled={pending || !datesReady}>
+            <Button type="submit" size="lg" disabled={pending}>
               {pending ? "Надсилаємо…" : isSick ? "Зареєструвати лікарняний" : "Надіслати заявку"}
             </Button>
           </div>

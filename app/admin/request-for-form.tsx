@@ -28,7 +28,6 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
   const [pending, startTransition] = useTransition();
 
   const isSick = type === "sick";
-  const ready = Boolean(employeeId && start && end && end >= start);
 
   function reset() {
     setEmployeeId("");
@@ -38,11 +37,25 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
     setError(null);
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  function changeStart(value: string) {
+    setStart(value);
+    if (value && (!end || value > end)) setEnd(value);
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    // Дати беремо з самих полів: Safari не завжди надсилає подію зміни для полів дати.
+    const field = (name: string) => (event.currentTarget.elements.namedItem(name) as HTMLInputElement | null)?.value ?? "";
+    const startValue = field("start") || start;
+    const endValue = field("end") || end;
+    setStart(startValue);
+    setEnd(endValue);
+    if (!employeeId) return setError("Оберіть співробітника.");
+    if (!startValue || !endValue) return setError("Вкажіть дати початку і кінця.");
+    if (endValue < startValue) return setError("Дата кінця не може бути раніше за дату початку.");
     startTransition(async () => {
-      const result = await submitRequestFor({ employeeId, type, start, end, comment });
+      const result = await submitRequestFor({ employeeId, type, start: startValue, end: endValue, comment });
       if (result.error) return setError(result.error);
       const name = employees.find((e) => e.id === employeeId)?.full_name ?? "";
       reset();
@@ -68,7 +81,7 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
         <CardTitle>Заявка за співробітника</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="for-employee">Співробітник</Label>
             <select
@@ -106,13 +119,13 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="for-start">З</Label>
-              <Input id="for-start" type="date" required min={isSick ? undefined : today} value={start}
-                onChange={(e) => { setStart(e.target.value); if (!end || e.target.value > end) setEnd(e.target.value); }} />
+              <Input id="for-start" name="start" type="date" required min={isSick ? undefined : today} value={start}
+                onChange={(e) => changeStart(e.target.value)} onBlur={(e) => changeStart(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="for-end">По</Label>
-              <Input id="for-end" type="date" required min={start || (isSick ? undefined : today)} value={end}
-                onChange={(e) => setEnd(e.target.value)} />
+              <Input id="for-end" name="end" type="date" required min={start || (isSick ? undefined : today)} value={end}
+                onChange={(e) => setEnd(e.target.value)} onBlur={(e) => setEnd(e.target.value)} />
             </div>
           </div>
           <p className="-mt-2 text-xs text-muted-foreground">
@@ -132,7 +145,7 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
             <Button type="button" variant="outline" size="lg" onClick={() => { reset(); setOpen(false); }}>
               Скасувати
             </Button>
-            <Button type="submit" size="lg" disabled={pending || !ready}>
+            <Button type="submit" size="lg" disabled={pending}>
               {pending ? "Вносимо…" : isSick ? "Зареєструвати лікарняний" : "Надіслати заявку"}
             </Button>
           </div>
