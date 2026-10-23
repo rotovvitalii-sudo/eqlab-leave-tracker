@@ -10,7 +10,7 @@ import { ROLE_LABEL } from "@/lib/format";
 import { assistantEnabled } from "@/lib/ai/assistant";
 import { cn } from "@/lib/utils";
 
-// Шапка з навігацією за роллю: менеджер і адмін теж мають «Мої відпустки».
+// Шапка з навігацією за роллю: адміністратор теж має «Мої відпустки».
 export async function AppShell({ employee, children }: { employee: CurrentEmployee; children: React.ReactNode }) {
   // Лічильник заявок «На розгляді», які чекають рішення цього користувача.
   let pending = 0;
@@ -23,7 +23,6 @@ export async function AppShell({ employee, children }: { employee: CurrentEmploy
   const ai = assistantEnabled();
   const links = [
     { href: "/employee", label: "Мої відпустки", count: 0 },
-    ...(employee.role === "manager" ? [{ href: "/manager", label: "Моя команда", count: pending }] : []),
     ...(employee.role === "admin" ? [{ href: "/admin", label: "Адміністрування", count: pending }] : []),
   ];
 

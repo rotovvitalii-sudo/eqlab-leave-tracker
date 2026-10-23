@@ -18,12 +18,11 @@ type QueueRow = {
   colleagues: string[];
 };
 
-// Черга «На розгляді»: менеджеру — заявки прямих підлеглих, адміну — заявки директорки.
-export async function ApprovalQueue({ title, hideWhenEmpty = false }: { title: string; hideWhenEmpty?: boolean }) {
+// Черга «На розгляді» адміністратора: заявки всіх співробітників, зокрема власні (spec v1.5).
+export async function ApprovalQueue({ title }: { title: string }) {
   const supabase = await createClient();
   const { data } = await supabase.rpc("get_approval_queue");
   const queue = (data as QueueRow[] | null) ?? [];
-  if (hideWhenEmpty && queue.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-3">

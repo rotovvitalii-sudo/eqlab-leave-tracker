@@ -38,9 +38,9 @@ async function AdminDashboard({ searchParams }: { searchParams: Promise<Search> 
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader eyebrow="Адміністратор" title="Адміністрування" subtitle="Уся компанія: огляд, заявки, баланси, відсутності, експорт" />
+      <PageHeader eyebrow="Адміністратор" title="Адміністрування" subtitle="Погодження заявок і вся компанія: огляд, заявки, баланси, відсутності, експорт" />
       <OnboardingTips set="admin" assistant={assistantEnabled()} />
-      <ApprovalQueue title="Заявки директорки на погодження" hideWhenEmpty />
+      <ApprovalQueue title="На погодження" />
       {/* На телефоні вкладки — сітка: «Огляд» на весь рядок, решта 2×2, усе видно без прокрутки. */}
       <nav className="grid grid-cols-2 gap-1 rounded-tile bg-muted p-1 text-sm sm:flex">
         {TABS.map((t) => (

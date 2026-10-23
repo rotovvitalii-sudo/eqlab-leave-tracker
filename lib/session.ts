@@ -2,7 +2,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type Role = "employee" | "manager" | "admin";
+export type Role = "employee" | "admin";
 
 export type CurrentEmployee = {
   id: string;
@@ -14,7 +14,6 @@ export type CurrentEmployee = {
 
 export const ROLE_HOME: Record<Role, string> = {
   employee: "/employee",
-  manager: "/manager",
   admin: "/admin",
 };
 
@@ -41,7 +40,7 @@ export const getCurrentEmployee = cache(async (): Promise<CurrentEmployee> => {
   };
 });
 
-// Менеджер і адміністратор теж співробітники, тож /employee доступна всім.
+// Адміністратор теж співробітник, тож /employee доступна обом ролям.
 export async function requireRole(allowed: Role[]) {
   const employee = await getCurrentEmployee();
   if (!allowed.includes(employee.role)) redirect(ROLE_HOME[employee.role]);

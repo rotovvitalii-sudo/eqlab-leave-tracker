@@ -5,7 +5,6 @@ import { ROLE_HOME, type Role } from "@/lib/session";
 
 const DEMO_EMAILS: Record<Role, string> = {
   employee: "employee@eqlab.test",
-  manager: "manager@eqlab.test",
   admin: "admin@eqlab.test",
 };
 

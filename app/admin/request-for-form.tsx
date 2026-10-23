@@ -46,7 +46,7 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
       if (result.error) return setError(result.error);
       const name = employees.find((e) => e.id === employeeId)?.full_name ?? "";
       reset();
-      setSuccess(isSick ? `Лікарняний зареєстровано: ${name}.` : `Заявку надіслано менеджеру на погодження: ${name}.`);
+      setSuccess(isSick ? `Лікарняний зареєстровано: ${name}.` : `Заявку додано в чергу погодження: ${name}.`);
       setOpen(false);
     });
   }
@@ -118,7 +118,7 @@ export function RequestForForm({ employees, today }: { employees: EmployeeOption
           <p className="-mt-2 text-xs text-muted-foreground">
             {isSick
               ? "Лікарняний одразу «Зареєстровано»; документ співробітник прикріпить сам."
-              : "Заявка піде на погодження менеджеру співробітника; діють ті самі правила балансу."}
+              : "Заявка потрапить у чергу «На погодження»; діють ті самі правила балансу."}
           </p>
 
           <div className="flex flex-col gap-1.5">

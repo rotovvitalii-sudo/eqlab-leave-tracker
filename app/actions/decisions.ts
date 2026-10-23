@@ -8,7 +8,6 @@ export async function decideRequest(id: string, approve: boolean, comment: strin
   const supabase = await createClient();
   const { error } = await supabase.rpc("decide_request", { p_id: id, p_approve: approve, p_comment: comment });
   if (error) return { error: error.message };
-  revalidatePath("/manager");
   revalidatePath("/admin");
   return { error: null };
 }

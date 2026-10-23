@@ -15,7 +15,7 @@ export const STATUS_LABEL: Record<LeaveStatus, string> = {
   registered: "Зареєстровано",
 };
 
-export const ROLE_LABEL = { employee: "Співробітник", manager: "Менеджер", admin: "Адміністратор" } as const;
+export const ROLE_LABEL = { employee: "Співробітник", admin: "Адміністратор" } as const;
 
 // Дати з БД приходять як YYYY-MM-DD; без Date, щоб не зсуватися часовим поясом.
 export function formatDate(iso: string) {

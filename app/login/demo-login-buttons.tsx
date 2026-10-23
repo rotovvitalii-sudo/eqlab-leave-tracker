@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { ArrowRight, ShieldCheck, UserRound, UsersRound, type LucideIcon } from "lucide-react";
+import { ArrowRight, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { signInAsDemo, type SignInState } from "@/app/actions/auth";
 import type { Role } from "@/lib/session";
 
@@ -15,17 +15,10 @@ const OPTIONS: { role: Role; title: string; person: string; abilities: string; I
     Icon: UserRound,
   },
   {
-    role: "manager",
-    title: "Менеджер",
-    person: "Дмитро Кравець · Керівник розробки",
-    abilities: "Погоджує заявки команди з підказкою, хто вже відсутній.",
-    Icon: UsersRound,
-  },
-  {
     role: "admin",
     title: "Адміністратор",
     person: "Марія Ткаченко · HR-менеджерка",
-    abilities: "Бачить усі заявки й баланси, вивантажує місяць для бухгалтерії.",
+    abilities: "Погоджує заявки, бачить усі заявки й баланси, вивантажує місяць для бухгалтерії.",
     Icon: ShieldCheck,
   },
 ];
@@ -44,7 +37,7 @@ export function DemoLoginButtons() {
 
   return (
     <form action={formAction} className="mt-4 flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {OPTIONS.map(({ role, title, person, abilities, Icon }, index) => (
           <button
             key={role}

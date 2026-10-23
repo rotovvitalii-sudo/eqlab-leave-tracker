@@ -66,7 +66,7 @@ export function RequestForm({ employeeId, today, initial }: { employeeId: string
       const result = await submitRequest({ type, start, end, comment });
       if (!result.ok) return setError(result.error);
 
-      let message = isSick ? "Лікарняний зареєстровано." : "Заявку надіслано менеджеру на погодження.";
+      let message = isSick ? "Лікарняний зареєстровано." : "Заявку надіслано адміністратору на погодження.";
       if (isSick && file) {
         const uploadError = await uploadSickDocument(employeeId, result.data, file);
         if (uploadError) message += ` Документ не додано: ${uploadError}. Його можна додати пізніше.`;

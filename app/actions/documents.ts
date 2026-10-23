@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 // Посилання на файл живе хвилину; хто може його отримати, вирішує політика Storage
-// (власник, його менеджер, адміністратор — spec §5.5).
+// (власник і адміністратор — spec §5.5).
 export async function getDocumentUrl(path: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.storage.from("sick-documents").createSignedUrl(path, 60);

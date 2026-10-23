@@ -19,7 +19,7 @@ type Search = Record<string, string | string[] | undefined>;
 export default function EmployeePage({ searchParams }: PageProps<"/employee">) {
   return (
     <RolePage
-      allowed={["employee", "manager", "admin"]}
+      allowed={["employee", "admin"]}
       render={(employee) => <EmployeeDashboard employee={employee} searchParams={searchParams} />}
     />
   );
@@ -147,7 +147,7 @@ async function MyRequests({ employeeId, today }: { employeeId: string; today: st
               {r.employee_comment && <p className="mt-2 text-sm">Коментар: {r.employee_comment}</p>}
               {r.decision_comment && (
                 <p className="mt-2 text-sm">
-                  <span className="text-muted-foreground">Відповідь менеджера:</span> {r.decision_comment}
+                  <span className="text-muted-foreground">Відповідь адміністратора:</span> {r.decision_comment}
                 </p>
               )}
               {r.type === "sick" && r.status === "registered" && !r.document_path && (
